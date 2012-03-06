@@ -8,23 +8,14 @@ require 'set'
 def find_big_word(word, state)
   p "word = #{word}, state = #{state}"
   if(word.length == 1)
+p "$$$$$$  RETURNING FINAL STATE #{state[0]} FOR WORD $$$$$$$" 
     return state[0]
   end
   state.find_all { |k| k[0] == word[1] }.each do |next_state|  # find all adjacent states with the next letter word[1]
     p "next state =? #{next_state}..."
-    result = find_big_word(word[1,word.length], @states[next_state[0]].assoc(next_state))
-    if(result)
-      return state[0] << result
-    end
+    return [state[0]] << find_big_word(word[1,word.length], @states[next_state[0]].assoc(next_state))
   end
-  return nil
-  # next_state = state.find { |k| k[0] == word[1] }
-  # if(next_state)
-    # p "@states[state.find {|k| k[0] == word[1] }]  =  #{@states[state.find {|k| k[0] == word[1] }]}"
-    # return find_big_word(word[1,word.length], @states[next_state[0]].assoc(next_state))
-  # else
-    # @longest = []
-  # end
+  return []
 end
 
 
@@ -46,19 +37,15 @@ dict.sort_by! { |line| -line.length }.each do |word|
   if(@valid_letters =~ word) # check that each char in the word is in the valid_letters set
     p ">>>>>>>>   checking word #{word}"
     @states[word[0]].each do |first_state|
-      result = find_big_word(word, first_state)
-      if(result == word)
-        p "****** longest word is #{result}    ************"
+      result = find_big_word(word, first_state).flatten
+      result_word = result.map {|st| st[0]}.join
+      if(result_word == word)
+        p "****** longest word is #{result_word} ************"
+        p "***  path used is #{ result.map { |st| "#{st} -> "}.join}"
+        exit
       else
-        p "got to #{result} for word #{word} trying state #{first_state}"
+        p "got to #{result_word} using path #{result} for word #{word} trying state #{first_state}"
       end
     end
   end
 end
-
-# for each word in dict starting with the longest...
-  # find the first letter in state list, traverse thru the adjacent @states array
-    # if the next letter found, goto that state's entry in the hash and recurse
-      # until all letters found
-      # print out the letter/@states, end
-    # else goto the next word...
